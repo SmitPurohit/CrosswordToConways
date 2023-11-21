@@ -71,8 +71,10 @@ def crossword_to_conways():
         for update in updated:
             grid[update[0]][update[1]] = update[2]
         
+        #Save image for gif creation later
         x3 = pygame.surfarray.pixels2d(screen)
-        image_arr.append(np.uint8(x3).T)
+        image_arr.append(np.uint8(x3).T) #Transpose bc for somereason this gets rotated
+
         if len(updated) == 0:
             running = False
         clock.tick(1)  # limits FPS to 1
@@ -81,6 +83,7 @@ def crossword_to_conways():
 
     #Remove the last 4 characters (.puz) to get the filename for the gif
     output_path = sys.argv[1][:-3] + "gif"
+    
     # Save the list of images as a GIF
     imageio.mimwrite(output_path, image_arr, duration=500)  # Set the duration between frames in milliseconds
 
