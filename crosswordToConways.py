@@ -2,6 +2,8 @@ from parseCrossword import parse_crossword
 import pygame
 import sys
 from utilities import num_neighbors
+import numpy as np
+import imageio
 
 def crossword_to_conways():
 
@@ -11,10 +13,10 @@ def crossword_to_conways():
     except FileNotFoundError:
         return
     puzzle_width, puzzle_height, grid = result
+    image_arr = []
     #Set up pygame
     pygame.init()
     pygame.display.set_caption("Conway Crossword")
-    font = pygame.font.Font(None, 10)
 
     screen = pygame.display.set_mode((puzzle_width*20+2, puzzle_height*20+2))
 
@@ -68,10 +70,19 @@ def crossword_to_conways():
                         updated.append((r,c,1))
         for update in updated:
             grid[update[0]][update[1]] = update[2]
-
+        
+        x3 = pygame.surfarray.pixels2d(screen)
+        image_arr.append(np.uint8(x3).T)
+        if len(updated) == 0:
+            running = False
         clock.tick(1)  # limits FPS to 1
         
     pygame.quit()
+
+    #Remove the last 4 characters (.puz) to get the filename for the gif
+    output_path = sys.argv[1][:-3] + "gif"
+    # Save the list of images as a GIF
+    imageio.mimwrite(output_path, image_arr, duration=500)  # Set the duration between frames in milliseconds
 
 if __name__ == "__main__":
     crossword_to_conways()
