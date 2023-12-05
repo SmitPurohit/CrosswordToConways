@@ -1,15 +1,33 @@
-from parseCrossword import parse_crossword
+from parseCrossword import parse_crossword_file
+from parseCrossword import parse_crossword_url
 import pygame
-import sys
+import getopt, sys
 from utilities import num_neighbors
 import numpy as np
 import imageio
+import re
 
-def crossword_to_conways():
+def crossword_to_conways(input_option, output_option, input_type):
 
     #Get values for the grid
     try:
-        result = parse_crossword(sys.argv[1])
+        if not input_type:
+            print("Enter an input type")
+            return
+        if input_type == "url":
+            date_pattern = re.compile(r'^\d{4}/\d{2}/\d{2}$')
+            if date_pattern.match(input_option):
+                print(f"Getting New Yorker Crossword for date {input_option}")
+            else:
+                print(f"{input_option} is not in the correct format.")
+                return
+            try:
+                result = parse_crossword_url(f"https://www.newyorker.com/puzzles-and-games-dept/crossword/{input_option}")
+            except:
+                print(f"{input_option} is either not a valid date or there is no New Yorker Crossword for that date")
+                return
+        if input_type == "file":
+            result = parse_crossword_file(input_option)
     except FileNotFoundError:
         return
     puzzle_width, puzzle_height, grid = result
@@ -77,15 +95,61 @@ def crossword_to_conways():
 
         if len(updated) == 0:
             running = False
-        clock.tick(1)  # limits FPS to 1
+        clock.tick(60)  # limits FPS to 1
         
     pygame.quit()
 
     #Remove the last 4 characters (.puz) to get the filename for the gif
-    output_path = sys.argv[1][:-3] + "gif"
+    if input_type=="file":
+        output_path = input_option[:-3] + "gif"
+    if input_type=="url":
+        input_option = input_option.replace("/", "-")
+        output_path = "NY" + input_option + ".gif"
+    if output_option != "":
+        output_path = output_option
+    
     
     # Save the list of images as a GIF
     imageio.mimwrite(output_path, image_arr, duration=500)  # Set the duration between frames in milliseconds
 
+
 if __name__ == "__main__":
-    crossword_to_conways()
+    argumentList = sys.argv[1:]
+ 
+    # Options
+    options = "hf:d:o:"
+ 
+    # Long options
+    long_options = ["Help", "File=", "Date=", "Output="]
+    
+    input_option = ""
+    output_option = ""
+
+    try:
+        # Parsing argument
+        arguments, values = getopt.getopt(argumentList, options, long_options)
+        # checking each argument
+        for currentArgument, currentValue in arguments:
+            if currentArgument in ("-h", "--Help"):
+                print("Run with -f <name>.puz or -d YYYY/MM/DD")
+                print("Specify output file with -o (must be a .gif)")
+            elif currentArgument in ("-f", "--File"):
+                print ("Using file:", currentValue)
+                input_option = currentValue
+                input_type = "file"
+            elif currentArgument in ("-d", "--Date"):
+                print("Using date: ", currentValue)
+                input_option = currentValue
+                input_type = "url"
+            elif currentArgument in ("-o", "--Output"):
+                if currentValue[-4:] == ".gif":
+                    print("Outputting to: ", currentValue)
+                    output_option = currentValue
+                else:
+                    sys.exit()
+                
+    except getopt.error as err:
+        # output error, and return with an error code
+        print (str(err))
+    if(input_option):
+        crossword_to_conways(input_option, output_option, input_type)
