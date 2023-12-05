@@ -4,6 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 
 def parse_crossword_file(filename: str):
+
+    #From .puz file format specs
     width_index = 0x2C
     height_index = 0x2D
     puzzle_offset = 0x34
@@ -17,9 +19,12 @@ def parse_crossword_file(filename: str):
     except FileNotFoundError as e:
         print(f"{e}")
         raise FileNotFoundError
+    
     puzzle_width = file_content[width_index] 
     puzzle_height = file_content[height_index]
     puzzle_size = (puzzle_width*puzzle_height)
+
+    #The grid is defined starting from the offset+size
     puzzle = file_content[puzzle_offset+puzzle_size:puzzle_offset+2*puzzle_size].decode('ascii')
     grid = [[0 for _ in range(puzzle_width)] for _ in range(puzzle_height)]
 
@@ -31,16 +36,21 @@ def parse_crossword_file(filename: str):
 
 
 def parse_crossword_url(url: str):
+
+    #1. Get the html source for the New Yorker page
     res = requests.get(url)
     soup = BeautifulSoup(res.text, 'html.parser')
+    #2. Find the amuselabs link where the crossword is hosted
     iframes = soup.find_all('iframe')
     links = [iframe.get('data-src') for iframe in iframes if iframe.get('data-src')]
+
+    #3. Load the dynamic content of the crossword
     async def get_page_html(url):
         browser = await launch(headless=True)
         page = await browser.newPage()
         await page.goto(url, waitUntil='domcontentloaded')
         
-        # Wait for a short time to ensure all dynamic content is loaded (you might need to adjust this)
+        # Wait for a short time to ensure all dynamic content is loaded
         await asyncio.sleep(2)
         
         # Get the rendered HTML content
@@ -48,14 +58,14 @@ def parse_crossword_url(url: str):
         
         await browser.close()
         return html
-
-    url = links[0]
+    url = links[0] 
     html_content = asyncio.get_event_loop().run_until_complete(get_page_html(url))
 
-    # Now 'html_content' contains the rendered HTML of the page
-    #print(html_content.encode('utf-8'))
+    #4. Parse the loaded version of the page
     soup = BeautifulSoup(html_content, 'html.parser')
     crossword_div = soup.find('div', {'class': 'crossword horizontally-centered'})
+
+    #5. Construct the grid ("etter" means it is a word box, aka a white box)
     grid = []
     row = []
     width = 0
@@ -75,6 +85,7 @@ def parse_crossword_url(url: str):
                 grid.append(row)
                 row = []
     height = len(grid)
-    return (width,height,grid)
+
+    return (width, height, grid)
     
     

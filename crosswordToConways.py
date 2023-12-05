@@ -14,24 +14,31 @@ def crossword_to_conways(input_option, output_option, input_type):
         if not input_type:
             print("Enter an input type")
             return
+        
         if input_type == "url":
+            #Make sure the date is in YYYY/MM/DD 
             date_pattern = re.compile(r'^\d{4}/\d{2}/\d{2}$')
             if date_pattern.match(input_option):
                 print(f"Getting New Yorker Crossword for date {input_option}")
             else:
                 print(f"{input_option} is not in the correct format.")
                 return
+            
             try:
                 result = parse_crossword_url(f"https://www.newyorker.com/puzzles-and-games-dept/crossword/{input_option}")
             except:
                 print(f"{input_option} is either not a valid date or there is no New Yorker Crossword for that date")
                 return
+            
         if input_type == "file":
             result = parse_crossword_file(input_option)
+
     except FileNotFoundError:
         return
+    
     puzzle_width, puzzle_height, grid = result
     image_arr = []
+    
     #Set up pygame
     pygame.init()
     pygame.display.set_caption("Conway Crossword")
@@ -70,13 +77,15 @@ def crossword_to_conways(input_option, output_option, input_type):
                     pygame.draw.rect(screen,"black",(c*20+1,r*20+1,19,19)) 
                 else:
                     pygame.draw.rect(screen,"white",(c*20+1,r*20+1,19,19)) 
+
         pygame.display.flip()
         
         if paused:
             continue
         
         #Calculate next board
-        updated = []
+        updated = [] #Updated holds a tuple of (row, col, new_val)
+
         for r in range(puzzle_height):
             for c in range(puzzle_width):
                 neighbors = num_neighbors(grid, r,c) 
@@ -86,21 +95,23 @@ def crossword_to_conways(input_option, output_option, input_type):
                 else:
                     if neighbors == 3:
                         updated.append((r,c,1))
+
         for update in updated:
             grid[update[0]][update[1]] = update[2]
         
         #Save image for gif creation later
         x3 = pygame.surfarray.pixels2d(screen)
-        image_arr.append(np.uint8(x3).T) #Transpose bc for somereason this gets rotated
+        image_arr.append(np.uint8(x3).T) #Transpose bc for some reason this gets rotated
 
         if len(updated) == 0:
             running = False
+
         clock.tick(60)  # limits FPS to 1
         
     pygame.quit()
 
-    #Remove the last 4 characters (.puz) to get the filename for the gif
     if input_type=="file":
+        #Remove the last 4 characters (.puz) to get the filename for the gif
         output_path = input_option[:-3] + "gif"
     if input_type=="url":
         input_option = input_option.replace("/", "-")
@@ -133,23 +144,28 @@ if __name__ == "__main__":
             if currentArgument in ("-h", "--Help"):
                 print("Run with -f <name>.puz or -d YYYY/MM/DD")
                 print("Specify output file with -o (must be a .gif)")
+                
             elif currentArgument in ("-f", "--File"):
                 print ("Using file:", currentValue)
                 input_option = currentValue
                 input_type = "file"
+
             elif currentArgument in ("-d", "--Date"):
                 print("Using date: ", currentValue)
                 input_option = currentValue
                 input_type = "url"
+
             elif currentArgument in ("-o", "--Output"):
                 if currentValue[-4:] == ".gif":
                     print("Outputting to: ", currentValue)
                     output_option = currentValue
+
                 else:
                     sys.exit()
                 
     except getopt.error as err:
         # output error, and return with an error code
         print (str(err))
+
     if(input_option):
         crossword_to_conways(input_option, output_option, input_type)
