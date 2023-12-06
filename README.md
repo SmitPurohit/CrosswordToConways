@@ -1,5 +1,6 @@
 # CrosswordToConways
-This is a program that takes a .puz file and plays Conway's Game of Life on the crossword
+
+-Takes in either a .puz file or the date of a New Yorker crossword and plays Conway's Game of Life on that crossword, outputting to a gif
 
 Install reqs with:
 
