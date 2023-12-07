@@ -38,6 +38,7 @@ def crossword_to_conways(input_option, output_option, input_type):
     
     puzzle_width, puzzle_height, grid = result
     image_arr = []
+    image_store = {}
     
     #Set up pygame
     pygame.init()
@@ -58,6 +59,8 @@ def crossword_to_conways(input_option, output_option, input_type):
 
     #Start paused, space button unpauses
     paused = True
+
+    maxOscillations = 5 #Total number of periods an oscillation will run for
     #Drawing loop
     while running:
 
@@ -101,8 +104,15 @@ def crossword_to_conways(input_option, output_option, input_type):
         
         #Save image for gif creation later
         x3 = pygame.surfarray.pixels2d(screen)
-        image_arr.append(np.uint8(x3).T) #Transpose bc for some reason this gets rotated
-
+        frame = np.uint8(x3).T #Transpose bc for some reason this gets rotated
+        frame_store = tuple(tuple(x) for x in frame)
+        if frame_store in image_store:
+            image_store[frame_store] += 1
+            if image_store[frame_store] >= maxOscillations:
+                break
+        else:
+            image_store[frame_store] = 1
+        image_arr.append(frame)
         if len(updated) == 0:
             running = False
 
