@@ -21,5 +21,5 @@ Press Space after the pygame window pops up
 ## Examples
 
 New Yorker (2023/12/06)
-()[https://github.com/SmitPurohit/CrosswordToConways/blob/main/examples/NY2023-12-06.gif]
+![](https://github.com/SmitPurohit/CrosswordToConways/blob/main/examples/NY2023-12-06.gif)
 
