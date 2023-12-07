@@ -157,8 +157,12 @@ if __name__ == "__main__":
                 
             elif currentArgument in ("-f", "--File"):
                 print ("Using file:", currentValue)
-                input_option = currentValue
-                input_type = "file"
+                if currentValue[-4:] == ".puz":
+                    input_option = currentValue
+                    input_type = "file"
+                else:
+                    print("Enter a valid .puz file")
+                    sys.exit
 
             elif currentArgument in ("-d", "--Date"):
                 print("Using date: ", currentValue)
@@ -171,6 +175,7 @@ if __name__ == "__main__":
                     output_option = currentValue
 
                 else:
+                    print("Enter a valid gif file")
                     sys.exit()
                 
     except getopt.error as err:
