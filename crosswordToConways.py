@@ -131,7 +131,7 @@ def crossword_to_conways(input_option, output_option, input_type):
     
     
     # Save the list of images as a GIF
-    imageio.mimwrite(output_path, image_arr, duration=500)  # Set the duration between frames in milliseconds
+    imageio.mimwrite(output_path, image_arr, duration=500, loop=0)  # Set the duration between frames in milliseconds
 
 
 if __name__ == "__main__":
