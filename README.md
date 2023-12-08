@@ -21,5 +21,9 @@ Press Space after the pygame window pops up
 ## Examples
 
 New Yorker (2023/12/06)
+
 ![](https://github.com/SmitPurohit/CrosswordToConways/blob/main/examples/NY2023-12-06.gif)
 
+[Snack Bars - Adam Aaronson](https://aaronson.org/crosswords/snackbars/)
+
+![](https://github.com/SmitPurohit/CrosswordToConways/blob/main/examples/example.gif)
